@@ -52,3 +52,10 @@ reference_shurtugal-lnx
 # Serena
 .serena/
 build/
+
+# Baseline ignores
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.env.*
+!.env.example
