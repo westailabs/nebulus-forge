@@ -8,7 +8,7 @@
    ./scripts/run_tests.sh
    ```
    ```bash
-   flake8 src tests --select=E9,F63,F7,F82
+   black --check src tests && flake8 src tests
    ```
 4. Merge back into `develop` with `git merge --no-ff` (or `git merge --squash` for a single clean commit), then delete the branch.
 5. `main` is the release branch. Do not commit to it directly.

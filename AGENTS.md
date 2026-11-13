@@ -14,7 +14,7 @@ Use the project virtualenv (`.venv`), never the global Python.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e . -r requirements-dev.txt   # install (editable) + dev tools
 ./scripts/run_tests.sh                     # test (or: pytest -q)
-flake8 src tests --select=E9,F63,F7,F82   # lint (same gate as CI)
+black --check src tests && flake8 src tests   # lint (same gate as CI)
 pre-commit run --all-files                 # all hooks
 
 forge profiles list
@@ -25,11 +25,11 @@ forge update [path]
 ## Build, test, and lint
 
 - `pytest` must be green before work is called done. Tests live in `tests/`; run a subset with `pytest tests/test_<name>.py -q`.
-- CI: `.github/workflows/unittests.yml` (flake8 + pytest on Python 3.10–3.12) runs on pushes and PRs to `main` and `develop`.
+- CI: `.github/workflows/unittests.yml` (flake8 + black --check + pytest on Python 3.10–3.12) runs on pushes and PRs to `main` and `develop`.
 
 ## Code style
 
-- Python 3.10+ (dev usually 3.12). flake8 (`.flake8`) gates syntax errors in CI. Black (88 cols) is configured in `pyproject.toml`, but the tree is not fully Black-formatted yet: format only files you touch, never the whole tree.
+- Python 3.10+ (dev usually 3.12). Black (88 cols, pinned in `pyproject.toml` dev extras) and flake8 (`.flake8`) are strict CI gates: run `black src tests` before committing. The one-time formatting commit is listed in `.git-blame-ignore-revs` (`git config blame.ignoreRevsFile .git-blame-ignore-revs`).
 - Type hints on public functions, Google-style docstrings.
 - Tests for any pipeline or profile change.
 
