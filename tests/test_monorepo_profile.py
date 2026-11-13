@@ -8,7 +8,6 @@ from forge.models import Strategy
 from forge.pipeline import generate
 from forge.profile_loader import list_profiles, resolve_profile
 
-
 PROFILES = Path(__file__).resolve().parents[1] / "profiles"
 
 

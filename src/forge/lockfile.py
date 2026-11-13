@@ -1,4 +1,5 @@
 """Forge lock file (.forge.lock) operations."""
+
 from __future__ import annotations
 
 import sys
@@ -67,9 +68,7 @@ def read_lock(target_dir: Path) -> ForgeLock | None:
 
     forge_section = data.get("forge", {})
     managed_raw = data.get("files", {}).get("managed", {})
-    managed = {
-        path: ManagedFileEntry(**entry) for path, entry in managed_raw.items()
-    }
+    managed = {path: ManagedFileEntry(**entry) for path, entry in managed_raw.items()}
 
     return ForgeLock(
         version=forge_section["version"],

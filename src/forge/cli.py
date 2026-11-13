@@ -1,4 +1,5 @@
 """Forge v2 CLI — Typer application."""
+
 from __future__ import annotations
 
 import os
@@ -149,7 +150,9 @@ def new(
     no_interactive: bool = typer.Option(False, "--no-interactive", help="Skip wizard"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show what would happen"),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
-    var: Optional[list[str]] = typer.Option(None, "--var", help="Variable as key=value"),
+    var: Optional[list[str]] = typer.Option(
+        None, "--var", help="Variable as key=value"
+    ),
     neo: str = typer.Option(
         "auto",
         "--neo",
@@ -169,6 +172,7 @@ def new(
 
     if not no_interactive and not variables:
         from forge.wizard import run_wizard
+
         variables = run_wizard(profile, profiles_dir)
 
     target.mkdir(parents=True, exist_ok=True)
@@ -215,6 +219,7 @@ def new(
             "[dim]Next: cd into the project, copy env.neo.example → .env if present, "
             "then ./scripts/neo start … or see neo-harness docs/starting-a-workspace.md[/dim]"
         )
+
 
 @app.command()
 def update(
@@ -320,7 +325,11 @@ def profiles_show(
     if spec.variables:
         console.print("\n[bold]Variables:[/bold]")
         for key, var_spec in spec.variables.items():
-            default = f" (default: {var_spec.default})" if var_spec.default is not None else ""
+            default = (
+                f" (default: {var_spec.default})"
+                if var_spec.default is not None
+                else ""
+            )
             console.print(f"  {key}: {var_spec.type}{default}")
 
     if spec.directories:
@@ -337,16 +346,12 @@ def profiles_show(
 @workspace_app.command("init")
 def workspace_init(
     target: Path = typer.Argument(..., help="Directory to create workspace in"),
-    no_interactive: bool = typer.Option(
-        False, "--no-interactive", help="Skip wizard"
-    ),
+    no_interactive: bool = typer.Option(False, "--no-interactive", help="Skip wizard"),
     config_file: Optional[Path] = typer.Option(
         None, "--config", help="JSON config file instead of wizard"
     ),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show what would happen"),
-    force: bool = typer.Option(
-        False, "--force", "-f", help="Overwrite existing files"
-    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
 ) -> None:
     """Initialize a new workspace with governance files."""
     from forge.workspace import scaffold_workspace, read_workspace_lock
@@ -354,15 +359,15 @@ def workspace_init(
 
     if config_file:
         import json
+
         data = json.loads(config_file.read_text(encoding="utf-8"))
         ws_config = WorkspaceConfig(**data)
     elif no_interactive:
-        console.print(
-            "[red]Error:[/red] --no-interactive requires --config FILE"
-        )
+        console.print("[red]Error:[/red] --no-interactive requires --config FILE")
         raise typer.Exit(code=1)
     else:
         from forge.workspace_wizard import run_workspace_wizard
+
         ws_config = run_workspace_wizard()
 
     if not force:
@@ -429,9 +434,7 @@ def workspace_info(
     lock = read_workspace_lock(target)
 
     if lock is None:
-        console.print(
-            "[red]No .forge-workspace.lock found in this directory.[/red]"
-        )
+        console.print("[red]No .forge-workspace.lock found in this directory.[/red]")
         raise typer.Exit(code=1)
 
     console.print("[bold]Forge Workspace Info[/bold]")

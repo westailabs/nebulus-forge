@@ -1,4 +1,5 @@
 """Tests for workspace wizard with mocked questionary."""
+
 import pytest
 from unittest.mock import patch, MagicMock
 
@@ -128,10 +129,10 @@ class TestAskProjects:
     def test_collects_project(self, mock_q):
         # First project (no deps available)
         mock_q.text.side_effect = [
-            _mock_ask("core"),       # name
-            _mock_ask("core/"),      # path
-            _mock_ask("org/core"),   # remote
-            _mock_ask(""),           # stop
+            _mock_ask("core"),  # name
+            _mock_ask("core/"),  # path
+            _mock_ask("org/core"),  # remote
+            _mock_ask(""),  # stop
         ]
         mock_q.select.return_value = _mock_ask("shared-library")
         result = _ask_projects()
@@ -150,9 +151,15 @@ class TestRunWorkspaceWizard:
     @patch("forge.workspace_wizard._ask_vision")
     @patch("forge.workspace_wizard._ask_workspace_name")
     def test_full_wizard(
-        self, mock_name, mock_vision, mock_constraints,
-        mock_tiers, mock_priorities, mock_stack,
-        mock_rules, mock_projects,
+        self,
+        mock_name,
+        mock_vision,
+        mock_constraints,
+        mock_tiers,
+        mock_priorities,
+        mock_stack,
+        mock_rules,
+        mock_projects,
     ):
         from forge.models import (
             BusinessConstraint,
@@ -161,6 +168,7 @@ class TestRunWorkspaceWizard:
             StrategicPriority,
             TechStackEntry,
         )
+
         mock_name.return_value = "Test Labs"
         mock_vision.return_value = "Build AI"
         mock_constraints.return_value = [
@@ -178,7 +186,10 @@ class TestRunWorkspaceWizard:
         mock_rules.return_value = ["No cloud"]
         mock_projects.return_value = [
             ProjectEntry(
-                name="core", role="lib", path="core/", remote="x/core",
+                name="core",
+                role="lib",
+                path="core/",
+                remote="x/core",
             ),
         ]
 

@@ -1,4 +1,5 @@
 """Workspace scaffolding and sync for ecosystem-level roots."""
+
 from __future__ import annotations
 
 import json
@@ -25,9 +26,7 @@ SENTINEL_END = "<!-- forge:ecosystem-end -->"
 
 def _get_template_env() -> Environment:
     """Create a Jinja2 environment for workspace templates."""
-    template_dir = (
-        Path(__file__).parent.parent.parent / "templates" / "workspace"
-    )
+    template_dir = Path(__file__).parent.parent.parent / "templates" / "workspace"
     return Environment(
         loader=FileSystemLoader(str(template_dir)),
         keep_trailing_newline=True,
@@ -252,9 +251,7 @@ def _parse_md_table(content: str, header_pattern: str) -> list[dict[str, str]]:
         if not in_table:
             if re.match(header_pattern, stripped):
                 # Parse header columns
-                headers = [
-                    h.strip() for h in stripped.strip("|").split("|")
-                ]
+                headers = [h.strip() for h in stripped.strip("|").split("|")]
                 in_table = True
             continue
 
@@ -284,9 +281,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
         Parsed OverlordManifest model.
     """
     # Parse projects table
-    project_rows = _parse_md_table(
-        content, r"^\|\s*Project\s*\|.*Role\s*\|"
-    )
+    project_rows = _parse_md_table(content, r"^\|\s*Project\s*\|.*Role\s*\|")
     projects = []
     for row in project_rows:
         deps_raw = row.get("Depends On", "—").strip()
@@ -295,18 +290,18 @@ def parse_overlord_md(content: str) -> OverlordManifest:
             if deps_raw and deps_raw != "—"
             else []
         )
-        projects.append(ProjectEntry(
-            name=row.get("Project", ""),
-            role=row.get("Role", ""),
-            path=row.get("Path", ""),
-            remote=row.get("Remote", ""),
-            depends_on=deps,
-        ))
+        projects.append(
+            ProjectEntry(
+                name=row.get("Project", ""),
+                role=row.get("Role", ""),
+                path=row.get("Path", ""),
+                remote=row.get("Remote", ""),
+                depends_on=deps,
+            )
+        )
 
     # Parse releases table
-    release_rows = _parse_md_table(
-        content, r"^\|\s*Project\s*\|.*Latest Release\s*\|"
-    )
+    release_rows = _parse_md_table(content, r"^\|\s*Project\s*\|.*Latest Release\s*\|")
     releases = [
         ReleaseEntry(
             project=row.get("Project", ""),
@@ -318,9 +313,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
     ]
 
     # Parse tracks table
-    track_rows = _parse_md_table(
-        content, r"^\|\s*Track\s*\|.*Status\s*\|"
-    )
+    track_rows = _parse_md_table(content, r"^\|\s*Track\s*\|.*Status\s*\|")
     tracks = [
         TrackEntry(
             track=row.get("Track", ""),
@@ -332,9 +325,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
     ]
 
     # Parse critical path table
-    cp_rows = _parse_md_table(
-        content, r"^\|\s*Phase\s*\|.*Description\s*\|"
-    )
+    cp_rows = _parse_md_table(content, r"^\|\s*Phase\s*\|.*Description\s*\|")
     critical_path = [
         CriticalPathEntry(
             phase=row.get("Phase", ""),
@@ -400,10 +391,7 @@ def _build_project_context(
         Rendered Markdown snippet.
     """
     # Find reverse dependencies
-    depended_on_by = [
-        p.name for p in manifest.projects
-        if project.name in p.depends_on
-    ]
+    depended_on_by = [p.name for p in manifest.projects if project.name in p.depends_on]
 
     # Build siblings list
     siblings = []
@@ -416,11 +404,13 @@ def _build_project_context(
             relationship = "this depends on"
         else:
             relationship = "sibling"
-        siblings.append({
-            "name": p.name,
-            "role": p.role,
-            "relationship": relationship,
-        })
+        siblings.append(
+            {
+                "name": p.name,
+                "role": p.role,
+                "relationship": relationship,
+            }
+        )
 
     env = _get_template_env()
     template = env.get_template("ecosystem_context.md.j2")
@@ -446,9 +436,7 @@ def _parse_governance_rules(content: str) -> list[str]:
         if in_gov:
             if line.strip().startswith("## "):
                 break
-            match = re.match(
-                r"^\d+\.\s+\*\*(.+?)\*\*\s*—\s*(.+)$", line.strip()
-            )
+            match = re.match(r"^\d+\.\s+\*\*(.+?)\*\*\s*—\s*(.+)$", line.strip())
             if match:
                 rules.append(f"**{match.group(1)}** — {match.group(2)}")
     return rules
@@ -500,13 +488,14 @@ def sync_context(
 
         project_dir = target / project.path.rstrip("/")
         if not project_dir.is_dir():
-            result["warnings"].append(
-                f"Project directory not found: {project.path}"
-            )
+            result["warnings"].append(f"Project directory not found: {project.path}")
             continue
 
         context_snippet = _build_project_context(
-            project, manifest, business, workspace_name,
+            project,
+            manifest,
+            business,
+            workspace_name,
         )
 
         for md_file in ["CLAUDE.md", "GEMINI.md"]:

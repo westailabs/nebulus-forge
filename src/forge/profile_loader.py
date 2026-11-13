@@ -1,4 +1,5 @@
 """Load and validate profiles from TOML files."""
+
 from __future__ import annotations
 
 import sys
@@ -47,9 +48,7 @@ def resolve_profile(name: str, profiles_dir: Path) -> ProfileSpec:
 
     # Parse variables
     raw_variables = profile_data.get("variables", {})
-    variables = {
-        key: VariableSpec(**val) for key, val in raw_variables.items()
-    }
+    variables = {key: VariableSpec(**val) for key, val in raw_variables.items()}
 
     # Build ProfileSpec
     profile_section = profile_data.get("profile", {})
@@ -83,9 +82,7 @@ def list_profiles(profiles_dir: Path) -> list[str]:
     return profiles
 
 
-def merge_inheritance(
-    profile: ProfileSpec, profiles_dir: Path
-) -> ResolvedProfile:
+def merge_inheritance(profile: ProfileSpec, profiles_dir: Path) -> ResolvedProfile:
     """Resolve the inheritance chain and merge into a single ResolvedProfile.
 
     Args:

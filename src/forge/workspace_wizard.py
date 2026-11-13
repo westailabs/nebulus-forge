@@ -1,4 +1,5 @@
 """Interactive wizard for workspace configuration collection."""
+
 from __future__ import annotations
 
 import questionary
@@ -42,7 +43,9 @@ def _ask_vision() -> str:
 def _ask_constraints() -> list[BusinessConstraint]:
     """Prompt for business constraints in a loop."""
     constraints: list[BusinessConstraint] = []
-    console.print("\n[bold]Business Constraints[/bold] (enter empty constraint to stop)")
+    console.print(
+        "\n[bold]Business Constraints[/bold] (enter empty constraint to stop)"
+    )
 
     while True:
         constraint = questionary.text("Constraint name:").ask()
@@ -76,10 +79,14 @@ def _ask_hardware_tiers() -> list[HardwareTier]:
         use_case = questionary.text(f"Use case for '{platform}':").ask()
         if use_case is None:
             raise KeyboardInterrupt("Wizard cancelled by user")
-        tiers.append(HardwareTier(
-            tier=tier_num, platform=platform,
-            hardware=hardware, use_case=use_case,
-        ))
+        tiers.append(
+            HardwareTier(
+                tier=tier_num,
+                platform=platform,
+                hardware=hardware,
+                use_case=use_case,
+            )
+        )
         tier_num += 1
 
     return tiers
@@ -100,9 +107,13 @@ def _ask_priorities() -> list[StrategicPriority]:
         key_result = questionary.text(f"Key result for '{goal}':").ask()
         if key_result is None:
             raise KeyboardInterrupt("Wizard cancelled by user")
-        priorities.append(StrategicPriority(
-            priority=priority_num, goal=goal, key_result=key_result,
-        ))
+        priorities.append(
+            StrategicPriority(
+                priority=priority_num,
+                goal=goal,
+                key_result=key_result,
+            )
+        )
         priority_num += 1
 
     return priorities
@@ -125,9 +136,13 @@ def _ask_tech_stack() -> list[TechStackEntry]:
         locked = questionary.confirm(f"Lock '{technology}'?", default=True).ask()
         if locked is None:
             raise KeyboardInterrupt("Wizard cancelled by user")
-        stack.append(TechStackEntry(
-            layer=layer, technology=technology, locked=locked,
-        ))
+        stack.append(
+            TechStackEntry(
+                layer=layer,
+                technology=technology,
+                locked=locked,
+            )
+        )
 
     return stack
 
@@ -196,10 +211,15 @@ def _ask_projects() -> list[ProjectEntry]:
                 raise KeyboardInterrupt("Wizard cancelled by user")
             depends_on = deps
 
-        projects.append(ProjectEntry(
-            name=name, role=role, path=path,
-            remote=remote, depends_on=depends_on,
-        ))
+        projects.append(
+            ProjectEntry(
+                name=name,
+                role=role,
+                path=path,
+                remote=remote,
+                depends_on=depends_on,
+            )
+        )
 
     return projects
 

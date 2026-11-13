@@ -1,4 +1,5 @@
 """Tests for workspace Pydantic models."""
+
 import pytest
 from pydantic import ValidationError
 
@@ -86,8 +87,11 @@ class TestProjectEntry:
 
     def test_with_dependencies(self):
         p = ProjectEntry(
-            name="prime", role="deployment", path="prime/",
-            remote="org/prime", depends_on=["core"],
+            name="prime",
+            role="deployment",
+            path="prime/",
+            remote="org/prime",
+            depends_on=["core"],
         )
         assert p.depends_on == ["core"]
 
@@ -125,9 +129,7 @@ class TestOverlordManifest:
     def test_full_construction(self):
         m = OverlordManifest(
             projects=[
-                ProjectEntry(
-                    name="core", role="lib", path="core/", remote="x/core"
-                )
+                ProjectEntry(name="core", role="lib", path="core/", remote="x/core")
             ],
             releases=[ReleaseEntry(project="core", latest_release="v1.0")],
             tracks=[TrackEntry(track="T1")],
@@ -150,11 +152,7 @@ class TestWorkspaceConfig:
             generated_at="2026-02-09T00:00:00Z",
             business=BusinessContext(vision="Build"),
             manifest=OverlordManifest(
-                projects=[
-                    ProjectEntry(
-                        name="a", role="lib", path="a/", remote="x/a"
-                    )
-                ]
+                projects=[ProjectEntry(name="a", role="lib", path="a/", remote="x/a")]
             ),
         )
         json_str = w.model_dump_json()

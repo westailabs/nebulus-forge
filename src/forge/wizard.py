@@ -1,4 +1,5 @@
 """Interactive wizard that generates prompts from profile variables."""
+
 from __future__ import annotations
 
 from pathlib import Path

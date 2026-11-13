@@ -1,4 +1,5 @@
 """Jinja2 template rendering for Forge profiles."""
+
 from __future__ import annotations
 
 import hashlib
@@ -26,9 +27,7 @@ class ProfileTemplateLoader(BaseLoader):
         raise TemplateNotFound(template)
 
 
-def render_templates(
-    profile: ResolvedProfile, variables: dict
-) -> list[RenderedFile]:
+def render_templates(profile: ResolvedProfile, variables: dict) -> list[RenderedFile]:
     """Render all templates in a profile to in-memory RenderedFile objects.
 
     Args:

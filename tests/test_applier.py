@@ -1,4 +1,5 @@
 """Tests for applying rendered files to disk."""
+
 import hashlib
 import pytest
 
@@ -99,9 +100,7 @@ class TestUpdateStrategy:
             profile="test",
             generated_at="2026-01-01T00:00:00Z",
             managed={
-                "README.md": ManagedFileEntry(
-                    template="README.md.j2", hash=old_hash
-                )
+                "README.md": ManagedFileEntry(template="README.md.j2", hash=old_hash)
             },
         )
         new_rendered = [
@@ -147,9 +146,7 @@ class TestUpdateStrategy:
 
     def test_requires_lock(self, tmp_path, rendered_files, profile):
         with pytest.raises(ValueError, match="lock"):
-            apply_to_disk(
-                rendered_files, profile, tmp_path, Strategy.UPDATE, lock=None
-            )
+            apply_to_disk(rendered_files, profile, tmp_path, Strategy.UPDATE, lock=None)
 
 
 class TestApplyResult:

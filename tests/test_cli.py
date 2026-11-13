@@ -1,9 +1,9 @@
 """Tests for the Typer CLI."""
+
 import pytest
 from typer.testing import CliRunner
 
 from forge.cli import app
-
 
 runner = CliRunner()
 
@@ -15,7 +15,7 @@ def profiles_dir(tmp_path):
     base.mkdir(parents=True)
     (base / "templates").mkdir()
 
-    (base / "profile.toml").write_text('''
+    (base / "profile.toml").write_text("""
 [profile]
 name = "base"
 description = "Test base"
@@ -24,15 +24,15 @@ description = "Test base"
 [variables.project_name]
 prompt = "Project name"
 type = "string"
-''')
+""")
 
-    (base / "structure.toml").write_text('''
+    (base / "structure.toml").write_text("""
 [directories]
 root = ["src", "tests"]
 
 [files]
 "README.md" = "README.md.j2"
-''')
+""")
 
     (base / "templates" / "README.md.j2").write_text("# {{ project_name }}")
     return tmp_path / "profiles"
@@ -43,12 +43,18 @@ class TestNewCommand:
         target = tmp_path / "myproject"
         monkeypatch.setattr("forge.cli.get_profiles_dir", lambda: profiles_dir)
 
-        result = runner.invoke(app, [
-            "new", str(target),
-            "--profile", "base",
-            "--no-interactive",
-            "--var", "project_name=myproject",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "new",
+                str(target),
+                "--profile",
+                "base",
+                "--no-interactive",
+                "--var",
+                "project_name=myproject",
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert (target / "README.md").exists()
@@ -57,13 +63,19 @@ class TestNewCommand:
         target = tmp_path / "myproject"
         monkeypatch.setattr("forge.cli.get_profiles_dir", lambda: profiles_dir)
 
-        result = runner.invoke(app, [
-            "new", str(target),
-            "--profile", "base",
-            "--no-interactive",
-            "--dry-run",
-            "--var", "project_name=myproject",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "new",
+                str(target),
+                "--profile",
+                "base",
+                "--no-interactive",
+                "--dry-run",
+                "--var",
+                "project_name=myproject",
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert not (target / "README.md").exists()
@@ -72,12 +84,18 @@ class TestNewCommand:
         target = tmp_path / "myproject"
         monkeypatch.setattr("forge.cli.get_profiles_dir", lambda: profiles_dir)
 
-        result = runner.invoke(app, [
-            "new", str(target),
-            "--profile", "nonexistent",
-            "--no-interactive",
-            "--var", "project_name=test",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "new",
+                str(target),
+                "--profile",
+                "nonexistent",
+                "--no-interactive",
+                "--var",
+                "project_name=test",
+            ],
+        )
 
         assert result.exit_code != 0
 

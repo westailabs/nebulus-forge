@@ -1,4 +1,5 @@
 """Integration tests for the full Forge pipeline."""
+
 import pytest
 
 from forge.pipeline import generate
@@ -13,7 +14,7 @@ def profiles_dir(tmp_path):
     base.mkdir(parents=True)
     (base / "templates").mkdir()
 
-    (base / "profile.toml").write_text('''
+    (base / "profile.toml").write_text("""
 [profile]
 name = "base"
 description = "Test base"
@@ -22,16 +23,16 @@ description = "Test base"
 [variables.project_name]
 prompt = "Project name"
 type = "string"
-''')
+""")
 
-    (base / "structure.toml").write_text('''
+    (base / "structure.toml").write_text("""
 [directories]
 root = ["src", "tests"]
 
 [files]
 "README.md" = "README.md.j2"
 ".gitignore" = ".gitignore.j2"
-''')
+""")
 
     (base / "templates" / "README.md.j2").write_text("# {{ project_name }}")
     (base / "templates" / ".gitignore.j2").write_text("__pycache__/")
@@ -90,7 +91,7 @@ class TestGenerate:
         )
 
         # Add a new file to the profile
-        (profiles_dir / "base" / "structure.toml").write_text('''
+        (profiles_dir / "base" / "structure.toml").write_text("""
 [directories]
 root = ["src", "tests"]
 
@@ -98,7 +99,7 @@ root = ["src", "tests"]
 "README.md" = "README.md.j2"
 ".gitignore" = ".gitignore.j2"
 "CHANGELOG.md" = "README.md.j2"
-''')
+""")
 
         # Update
         result = generate(

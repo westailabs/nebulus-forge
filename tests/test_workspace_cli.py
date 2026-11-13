@@ -1,4 +1,5 @@
 """Tests for workspace CLI commands."""
+
 import json
 from typer.testing import CliRunner
 
@@ -28,8 +29,10 @@ def _make_config_dict() -> dict:
         manifest=OverlordManifest(
             projects=[
                 ProjectEntry(
-                    name="proj-a", role="library",
-                    path="proj-a/", remote="org/proj-a",
+                    name="proj-a",
+                    role="library",
+                    path="proj-a/",
+                    remote="org/proj-a",
                 ),
             ],
         ),
@@ -44,11 +47,17 @@ class TestWorkspaceInit:
         config_file.write_text(json.dumps(config_data))
 
         target = tmp_path / "workspace"
-        result = runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert (target / "BUSINESS.md").exists()
@@ -62,12 +71,18 @@ class TestWorkspaceInit:
         config_file.write_text(json.dumps(config_data))
 
         target = tmp_path / "workspace"
-        result = runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-            "--dry-run",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+                "--dry-run",
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert "Dry run" in result.output
@@ -75,10 +90,15 @@ class TestWorkspaceInit:
 
     def test_init_no_interactive_without_config_errors(self, tmp_path):
         target = tmp_path / "workspace"
-        result = runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+            ],
+        )
         assert result.exit_code != 0
 
     def test_init_rejects_existing_workspace(self, tmp_path):
@@ -88,18 +108,30 @@ class TestWorkspaceInit:
 
         target = tmp_path / "workspace"
         # First init
-        runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
 
         # Second init should fail
-        result = runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
         assert result.exit_code != 0
         assert "already initialized" in result.output
 
@@ -110,19 +142,31 @@ class TestWorkspaceInit:
 
         target = tmp_path / "workspace"
         # First init
-        runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
 
         # Force reinit
-        result = runner.invoke(app, [
-            "workspace", "init", str(target),
-            "--no-interactive",
-            "--config", str(config_file),
-            "--force",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(target),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+                "--force",
+            ],
+        )
         assert result.exit_code == 0, result.output
 
 
@@ -133,28 +177,44 @@ class TestWorkspaceSync:
         config_file = tmp_path / "ws-config.json"
         config_file.write_text(json.dumps(config_data))
 
-        runner.invoke(app, [
-            "workspace", "init", str(tmp_path),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(tmp_path),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
 
         # Create sub-project with CLAUDE.md
         proj_dir = tmp_path / "proj-a"
         proj_dir.mkdir()
         (proj_dir / "CLAUDE.md").write_text("# Proj A\n")
 
-        result = runner.invoke(app, [
-            "workspace", "sync", str(tmp_path),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "sync",
+                str(tmp_path),
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert "SYNC" in result.output
 
     def test_sync_no_overlord_warns(self, tmp_path):
-        result = runner.invoke(app, [
-            "workspace", "sync", str(tmp_path),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "sync",
+                str(tmp_path),
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert "WARN" in result.output
@@ -166,22 +226,38 @@ class TestWorkspaceInfo:
         config_file = tmp_path / "ws-config.json"
         config_file.write_text(json.dumps(config_data))
 
-        runner.invoke(app, [
-            "workspace", "init", str(tmp_path),
-            "--no-interactive",
-            "--config", str(config_file),
-        ])
+        runner.invoke(
+            app,
+            [
+                "workspace",
+                "init",
+                str(tmp_path),
+                "--no-interactive",
+                "--config",
+                str(config_file),
+            ],
+        )
 
-        result = runner.invoke(app, [
-            "workspace", "info", str(tmp_path),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "info",
+                str(tmp_path),
+            ],
+        )
 
         assert result.exit_code == 0, result.output
         assert "CLI Test Labs" in result.output
         assert "Projects:" in result.output
 
     def test_info_no_lock_errors(self, tmp_path):
-        result = runner.invoke(app, [
-            "workspace", "info", str(tmp_path),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "workspace",
+                "info",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code != 0

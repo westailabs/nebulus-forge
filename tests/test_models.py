@@ -1,4 +1,5 @@
 """Tests for Forge v2 Pydantic models."""
+
 import pytest
 from pathlib import Path
 from pydantic import ValidationError
@@ -61,9 +62,7 @@ class TestProfileSpec:
             name="fullstack",
             description="Full stack",
             inherits="base",
-            variables={
-                "project_name": VariableSpec(prompt="Name", type="string")
-            },
+            variables={"project_name": VariableSpec(prompt="Name", type="string")},
             directories=["src", "tests"],
             files={"README.md": "README.md.j2"},
             conditionals={"Dockerfile": "use_docker"},
@@ -134,9 +133,7 @@ class TestForgeLock:
             generated_at="2026-02-03T14:30:00Z",
             variables={"project_name": "my-project", "use_docker": True},
             managed={
-                "README.md": ManagedFileEntry(
-                    template="README.md.j2", hash="abc123"
-                )
+                "README.md": ManagedFileEntry(template="README.md.j2", hash="abc123")
             },
         )
         assert lock.profile == "fullstack"

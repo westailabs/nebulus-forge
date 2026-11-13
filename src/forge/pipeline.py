@@ -1,4 +1,5 @@
 """Forge v2 pipeline — the core orchestration."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -55,7 +56,9 @@ def generate(
 
     # Step 4: Apply to disk
     lock = read_lock(target) if strategy == Strategy.UPDATE else None
-    result = apply_to_disk(rendered, resolved, target, strategy, lock=lock, variables=variables)
+    result = apply_to_disk(
+        rendered, resolved, target, strategy, lock=lock, variables=variables
+    )
 
     # Step 5: Write lock file
     now = datetime.now(timezone.utc).isoformat()

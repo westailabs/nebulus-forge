@@ -84,9 +84,7 @@ def run_neo_init_workspace(
     if not (target / ".git").exists():
         argv.append("--force-no-git")
 
-    console.print(
-        f"  [dim]Running neo-harness embed: {' '.join(argv)}[/dim]"
-    )
+    console.print(f"  [dim]Running neo-harness embed: {' '.join(argv)}[/dim]")
     try:
         proc = subprocess.run(
             argv,
@@ -96,7 +94,9 @@ def run_neo_init_workspace(
             check=False,
         )
     except OSError as exc:
-        console.print(f"  [yellow]⚠️  neo init-workspace failed to start: {exc}[/yellow]")
+        console.print(
+            f"  [yellow]⚠️  neo init-workspace failed to start: {exc}[/yellow]"
+        )
         return False
 
     if proc.returncode != 0:

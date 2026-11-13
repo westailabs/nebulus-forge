@@ -40,13 +40,17 @@ def _make_config(workspace_name: str = "Test Labs") -> WorkspaceConfig:
             ],
             hardware_tiers=[
                 HardwareTier(
-                    tier=1, platform="Edge",
-                    hardware="M4 Pro", use_case="Appliance",
+                    tier=1,
+                    platform="Edge",
+                    hardware="M4 Pro",
+                    use_case="Appliance",
                 ),
             ],
             priorities=[
                 StrategicPriority(
-                    priority=1, goal="Ship v1", key_result="Done",
+                    priority=1,
+                    goal="Ship v1",
+                    key_result="Done",
                 ),
             ],
             tech_stack=[
@@ -57,17 +61,23 @@ def _make_config(workspace_name: str = "Test Labs") -> WorkspaceConfig:
         manifest=OverlordManifest(
             projects=[
                 ProjectEntry(
-                    name="core", role="shared-library",
-                    path="core/", remote="org/core",
+                    name="core",
+                    role="shared-library",
+                    path="core/",
+                    remote="org/core",
                 ),
                 ProjectEntry(
-                    name="prime", role="platform-deployment",
-                    path="prime/", remote="org/prime",
+                    name="prime",
+                    role="platform-deployment",
+                    path="prime/",
+                    remote="org/prime",
                     depends_on=["core"],
                 ),
                 ProjectEntry(
-                    name="tools", role="tooling",
-                    path="tools/", remote="org/tools",
+                    name="tools",
+                    role="tooling",
+                    path="tools/",
+                    remote="org/tools",
                 ),
             ],
             releases=[
@@ -141,10 +151,16 @@ class TestBuildDependencyAscii:
     def test_simple_tree(self):
         projects = [
             ProjectEntry(
-                name="core", role="lib", path="core/", remote="x/core",
+                name="core",
+                role="lib",
+                path="core/",
+                remote="x/core",
             ),
             ProjectEntry(
-                name="prime", role="deploy", path="prime/", remote="x/prime",
+                name="prime",
+                role="deploy",
+                path="prime/",
+                remote="x/prime",
                 depends_on=["core"],
             ),
         ]
@@ -155,7 +171,10 @@ class TestBuildDependencyAscii:
     def test_standalone_projects(self):
         projects = [
             ProjectEntry(
-                name="tools", role="tooling", path="tools/", remote="x/tools",
+                name="tools",
+                role="tooling",
+                path="tools/",
+                remote="x/tools",
             ),
         ]
         result = build_dependency_ascii(projects)
@@ -164,14 +183,23 @@ class TestBuildDependencyAscii:
     def test_mixed_tree_and_standalone(self):
         projects = [
             ProjectEntry(
-                name="core", role="lib", path="core/", remote="x/core",
+                name="core",
+                role="lib",
+                path="core/",
+                remote="x/core",
             ),
             ProjectEntry(
-                name="prime", role="deploy", path="prime/", remote="x/prime",
+                name="prime",
+                role="deploy",
+                path="prime/",
+                remote="x/prime",
                 depends_on=["core"],
             ),
             ProjectEntry(
-                name="tools", role="tooling", path="tools/", remote="x/tools",
+                name="tools",
+                role="tooling",
+                path="tools/",
+                remote="x/tools",
             ),
         ]
         result = build_dependency_ascii(projects)
@@ -360,9 +388,7 @@ class TestSyncContext:
 
         core_dir = tmp_path / "core"
         core_dir.mkdir()
-        (core_dir / "CLAUDE.md").write_text(
-            "# Core Project\n\nUser content here\n"
-        )
+        (core_dir / "CLAUDE.md").write_text("# Core Project\n\nUser content here\n")
 
         sync_context(tmp_path)
         updated = (core_dir / "CLAUDE.md").read_text()
