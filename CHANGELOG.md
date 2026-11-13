@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Generated projects (`base`, `fullstack`, `monorepo`) and `forge workspace init` now write
+  agent instructions to **`AGENTS.md`** (agents.md convention), a one-line `CLAUDE.md`
+  (`@AGENTS.md`), and `.gemini/settings.json` (`context.fileName: AGENTS.md`). `GEMINI.md`
+  is no longer generated; its content is merged into `AGENTS.md`.
+- `forge workspace sync` injects ecosystem context into sub-project `AGENTS.md` and skips
+  `@AGENTS.md` pointer stubs. `render_workspace_claude_md` is kept as an alias of
+  `render_workspace_agents_md`.
+- CI lint gate is strict: full `flake8` plus `black --check` (black pinned to 26.10.1).
+
 ## [0.3.0] - 2026-08-05
 
 ### Removed

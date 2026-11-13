@@ -1,14 +1,23 @@
 # AGENTS.md — {{ project_name }}
 
-## Role
+Single source of instructions for AI coding agents (Claude Code, Codex, Cursor,
+Gemini CLI, Copilot, neo-harness, …), following the [agents.md](https://agents.md)
+convention. `CLAUDE.md` is a one-line `@AGENTS.md` import and
+`.gemini/settings.json` points Gemini CLI here, so keep everything in this file.
 
-You are assisting engineers at **{{ org_name }}** on this monorepo. Prefer
-layout discipline, small reviewable changes, and explicit validation.
+## Overview
+
+**{{ project_name }}** — {{ description }}  
+**Org:** {{ org_name }}
+
+This is a **monorepo control plane**. Prefer layout discipline, small reviewable
+changes, and explicit validation. Do not treat `workspace/` as durable product
+documentation.
 
 ## Session bootstrap (recommended)
 
 1. Read [LAYOUT.md](LAYOUT.md).  
-2. Skim this file and [CLAUDE.md](CLAUDE.md).  
+2. Read this file, then [WORKFLOW.md](WORKFLOW.md) and [BUSINESS.md](BUSINESS.md) for constraints.  
 3. If shared graph/RAG (or other platform services) are configured for this lab,
    **validate them before asserting live status** (health endpoint, MCP, or
    documented probe). Do not invent “healthy” from memory.  
@@ -26,11 +35,45 @@ workspace/  → scratch only
 ```
 
 ```bash
-python3 scripts/print_layout.py
+python3 scripts/print_layout.py   # print the layout registry
+python3 -m pytest tests -q        # layout smoke tests (same as CI)
 ```
 
 Do **not** invent top-level directories. Put durable notes in `docs/`, not
 `workspace/`.
+
+## Agent instructions
+
+1. Change the **smallest** correct bucket (`products/`, `services/`, `hosts/`, …).  
+2. For host/system changes: prefer IaC under `hosts/` over ad-hoc machine edits.  
+3. Keep product vs lab boundaries clear (`products/` / `services/` vs `lab/`).  
+4. Record durable decisions in `docs/decisions/`.  
+5. If neo-harness is embedded, prefer `./scripts/neo` for bounded jobs.
+
+## Stack
+
+- Python {{ python_version }}+ for monorepo tooling and packages  
+- Prefer package managers and language stacks declared in `BUSINESS.md`  
+- Nested product trees may use their own tooling (and their own `AGENTS.md`)
+
+## Git workflow
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Production-ready / releases |
+| `{{ default_integration_branch }}` | Integration (daily work) |
+| `feat/*`, `fix/*`, `docs/*`, `chore/*` | Short-lived local work |
+
+- Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, …  
+- Branch off the integration branch; merge back with review (`--squash` for one
+  clean commit), then delete the branch  
+- Never commit `.env` or credentials  
+
+## Coding standards
+
+- Type hints on public Python APIs  
+- Tests for non-trivial behavior  
+- Document durable decisions under `docs/decisions/`  
 
 ## neo-harness (if embedded)
 

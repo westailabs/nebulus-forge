@@ -45,8 +45,8 @@ Added `forge workspace` subcommand group for scaffolding ecosystem-level workspa
 
 ### Architectural decisions
 *   **Separate wizard**: `workspace_wizard.py` is separate from `wizard.py` because workspace data collection uses repeating groups (constraints, hardware tiers, projects) and inter-dependent fields (project dependencies reference previously entered projects). The existing wizard's flat variable-to-prompt pattern doesn't fit.
-*   **Sentinel-based sync**: `sync_context()` uses `<!-- forge:ecosystem-start/end -->` comment markers to inject/replace a managed section in sub-project CLAUDE.md and GEMINI.md. This preserves user content outside the markers and is idempotent — running sync twice produces the same result.
-*   **Sync does not create files**: If a sub-project has no CLAUDE.md, sync skips it. Sub-projects own their files; Forge only manages its section within them.
+*   **Sentinel-based sync**: `sync_context()` uses `<!-- forge:ecosystem-start/end -->` comment markers to inject/replace a managed section in sub-project AGENTS.md (and legacy CLAUDE.md / GEMINI.md, skipping one-line `@AGENTS.md` stubs). This preserves user content outside the markers and is idempotent — running sync twice produces the same result.
+*   **Sync does not create files**: If a sub-project has no AGENTS.md (or legacy CLAUDE.md/GEMINI.md), sync skips it. Sub-projects own their files; Forge only manages its section within them.
 *   **JSON lock file**: `.forge-workspace.lock` uses JSON (Pydantic `model_dump_json`) instead of TOML like `.forge.lock`. The workspace config has nested lists of objects that map cleanly to JSON but awkwardly to TOML's array-of-tables syntax.
 *   **Markdown table parser**: `parse_overlord_md()` uses regex-based table extraction rather than a Markdown AST library. The table format is constrained and predictable — a full parser would be overkill. Round-trip tested: render → parse → compare.
 *   **ASCII dependency graph**: `build_dependency_ascii()` computes a tree from `ProjectEntry.depends_on` adjacency. Standalone projects (no deps, no dependents) are listed separately. The graph is embedded directly in OVERLORD.md.

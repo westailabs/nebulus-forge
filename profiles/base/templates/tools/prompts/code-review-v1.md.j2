@@ -2,7 +2,7 @@
 
 **Purpose:** Standard code review
 **Target:** Claude Code (claude-sonnet-4-6+)
-**Context Required:** Root `CLAUDE.md` + sub-module `CLAUDE.md` for affected layer
+**Context Required:** Root `AGENTS.md` + sub-module `AGENTS.md` for affected layer
 **Version:** 1.0 | Created: {{ current_date | default('YYYY-MM-DD') }}
 
 ---
@@ -13,12 +13,12 @@
 You are reviewing a code change in {{ project_name }}.
 
 Before starting, load:
-- CLAUDE.md (root)
-- [Relevant sub-module CLAUDE.md if applicable]
+- AGENTS.md (root)
+- [Relevant sub-module AGENTS.md if applicable]
 - AI_DIRECTIVES.md
 
 Review the following diff/file for:
-1. Adherence to project conventions (CLAUDE.md + AI_DIRECTIVES.md)
+1. Adherence to project conventions (AGENTS.md + AI_DIRECTIVES.md)
 2. Any writes to protected paths without hook acknowledgment
 3. Hardcoded secrets, env values, or debug flags
 4. Missing tests for new behavior

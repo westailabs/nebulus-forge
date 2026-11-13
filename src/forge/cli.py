@@ -403,7 +403,7 @@ def workspace_sync(
         None, "--project", help="Sync only this project"
     ),
 ) -> None:
-    """Sync ecosystem context into sub-project CLAUDE.md/GEMINI.md files."""
+    """Sync ecosystem context into sub-project AGENTS.md (and legacy CLAUDE/GEMINI)."""
     from forge.workspace import sync_context
 
     target = target.resolve()

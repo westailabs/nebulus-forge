@@ -105,8 +105,12 @@ def render_overlord_md(config: WorkspaceConfig) -> str:
     )
 
 
-def render_workspace_claude_md(config: WorkspaceConfig) -> str:
-    """Render root CLAUDE.md from workspace config.
+CLAUDE_MD_STUB = "@AGENTS.md\n"
+GEMINI_SETTINGS_JSON = '{\n  "context": {\n    "fileName": "AGENTS.md"\n  }\n}\n'
+
+
+def render_workspace_agents_md(config: WorkspaceConfig) -> str:
+    """Render root AGENTS.md from workspace config.
 
     Args:
         config: Workspace configuration.
@@ -115,11 +119,21 @@ def render_workspace_claude_md(config: WorkspaceConfig) -> str:
         Rendered Markdown string.
     """
     env = _get_template_env()
-    template = env.get_template("CLAUDE.md.j2")
+    template = env.get_template("AGENTS.md.j2")
     return template.render(
         workspace_name=config.workspace_name,
         manifest=config.manifest,
     )
+
+
+# Backward-compatible alias (root instructions now live in AGENTS.md).
+render_workspace_claude_md = render_workspace_agents_md
+
+
+def _is_pointer_stub(content: str) -> bool:
+    """Return True if a file is only an ``@AGENTS.md``-style import stub."""
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    return len(lines) == 1 and lines[0].startswith("@")
 
 
 # --- Dependency graph ---
@@ -201,7 +215,9 @@ def scaffold_workspace(
     files_to_write = {
         "BUSINESS.md": render_business_md(config),
         "OVERLORD.md": render_overlord_md(config),
-        "CLAUDE.md": render_workspace_claude_md(config),
+        "AGENTS.md": render_workspace_agents_md(config),
+        "CLAUDE.md": CLAUDE_MD_STUB,
+        ".gemini/settings.json": GEMINI_SETTINGS_JSON,
     }
 
     result: dict[str, list[str]] = {"created": [], "skipped": []}
@@ -217,6 +233,7 @@ def scaffold_workspace(
             result["skipped"].append(filename)
         else:
             if not dry_run:
+                filepath.parent.mkdir(parents=True, exist_ok=True)
                 filepath.write_text(content, encoding="utf-8")
             result["created"].append(filename)
 
@@ -447,10 +464,11 @@ def sync_context(
     dry_run: bool = False,
     project_filter: str | None = None,
 ) -> dict[str, list[str]]:
-    """Sync ecosystem context into sub-project CLAUDE.md and GEMINI.md files.
+    """Sync ecosystem context into sub-project AGENTS.md (and legacy CLAUDE.md/GEMINI.md).
 
     Reads OVERLORD.md and BUSINESS.md from the workspace root, then injects
-    a managed section into each sub-project's CLAUDE.md and GEMINI.md using
+    a managed section into each sub-project's AGENTS.md (plus legacy, non-stub
+    CLAUDE.md and GEMINI.md) using
     sentinel comments.
 
     Args:
@@ -498,13 +516,17 @@ def sync_context(
             workspace_name,
         )
 
-        for md_file in ["CLAUDE.md", "GEMINI.md"]:
+        # AGENTS.md is canonical; legacy CLAUDE.md / GEMINI.md are still
+        # synced unless they are one-line ``@AGENTS.md`` pointer stubs.
+        for md_file in ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]:
             md_path = project_dir / md_file
             if not md_path.exists():
                 # Don't create files that don't exist
                 continue
 
             existing = md_path.read_text(encoding="utf-8")
+            if _is_pointer_stub(existing):
+                continue
             updated = _inject_section(existing, context_snippet)
 
             if updated != existing:
