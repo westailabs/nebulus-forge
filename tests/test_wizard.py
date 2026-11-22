@@ -26,9 +26,7 @@ class TestBuildPrompts:
 
     def test_confirm_produces_confirm_prompt(self):
         variables = {
-            "docker": VariableSpec(
-                prompt="Use Docker?", type="confirm", default=True
-            )
+            "docker": VariableSpec(prompt="Use Docker?", type="confirm", default=True)
         }
         prompts = build_prompts(variables)
         assert prompts[0]["type"] == "confirm"
@@ -36,9 +34,7 @@ class TestBuildPrompts:
 
     def test_default_preserved(self):
         variables = {
-            "name": VariableSpec(
-                prompt="Name", type="string", default="World"
-            )
+            "name": VariableSpec(prompt="Name", type="string", default="World")
         }
         prompts = build_prompts(variables)
         assert prompts[0]["default"] == "World"

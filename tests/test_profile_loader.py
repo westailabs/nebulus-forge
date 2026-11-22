@@ -1,4 +1,5 @@
 """Tests for profile loading from TOML files."""
+
 import pytest
 
 from forge.profile_loader import resolve_profile, list_profiles, merge_inheritance
@@ -12,7 +13,7 @@ def profiles_dir(tmp_path):
     base.mkdir()
     (base / "templates").mkdir()
 
-    (base / "profile.toml").write_text('''
+    (base / "profile.toml").write_text("""
 [profile]
 name = "base"
 description = "Test base profile"
@@ -27,9 +28,9 @@ prompt = "Package manager"
 type = "choice"
 choices = ["pip", "poetry", "uv"]
 default = "pip"
-''')
+""")
 
-    (base / "structure.toml").write_text('''
+    (base / "structure.toml").write_text("""
 [directories]
 root = ["src", "tests", "docs"]
 
@@ -40,7 +41,7 @@ root = ["src", "tests", "docs"]
 
 [conditionals]
 "requirements.txt" = "use_pip"
-''')
+""")
 
     return tmp_path
 
@@ -104,7 +105,7 @@ class TestMergeInheritance:
         base = tmp_path / "base"
         base.mkdir()
         (base / "templates").mkdir()
-        (base / "profile.toml").write_text('''
+        (base / "profile.toml").write_text("""
 [profile]
 name = "base"
 description = "Base"
@@ -113,8 +114,8 @@ description = "Base"
 [variables.project_name]
 prompt = "Project name"
 type = "string"
-''')
-        (base / "structure.toml").write_text('''
+""")
+        (base / "structure.toml").write_text("""
 [directories]
 root = ["src", "tests"]
 
@@ -124,12 +125,12 @@ root = ["src", "tests"]
 
 [conditionals]
 "requirements.txt" = "use_pip"
-''')
+""")
 
         child = tmp_path / "fullstack"
         child.mkdir()
         (child / "templates").mkdir()
-        (child / "profile.toml").write_text('''
+        (child / "profile.toml").write_text("""
 [profile]
 name = "fullstack"
 inherits = "base"
@@ -140,8 +141,8 @@ description = "Fullstack"
 prompt = "Docker?"
 type = "confirm"
 default = true
-''')
-        (child / "structure.toml").write_text('''
+""")
+        (child / "structure.toml").write_text("""
 [directories]
 root = ["notebooks", "models"]
 
@@ -150,7 +151,7 @@ root = ["notebooks", "models"]
 
 [conditionals]
 "Dockerfile" = "use_docker"
-''')
+""")
 
         return tmp_path
 
@@ -158,25 +159,25 @@ root = ["notebooks", "models"]
         spec = resolve_profile("fullstack", two_level_profiles)
         resolved = merge_inheritance(spec, two_level_profiles)
         assert "project_name" in resolved.variables  # from base
-        assert "use_docker" in resolved.variables     # from child
+        assert "use_docker" in resolved.variables  # from child
 
     def test_unions_directories(self, two_level_profiles):
         spec = resolve_profile("fullstack", two_level_profiles)
         resolved = merge_inheritance(spec, two_level_profiles)
-        assert "src" in resolved.directories       # from base
+        assert "src" in resolved.directories  # from base
         assert "notebooks" in resolved.directories  # from child
 
     def test_child_files_override_parent(self, two_level_profiles):
         spec = resolve_profile("fullstack", two_level_profiles)
         resolved = merge_inheritance(spec, two_level_profiles)
-        assert "README.md" in resolved.files    # from base
-        assert "Dockerfile" in resolved.files   # from child
+        assert "README.md" in resolved.files  # from base
+        assert "Dockerfile" in resolved.files  # from child
 
     def test_merges_conditionals(self, two_level_profiles):
         spec = resolve_profile("fullstack", two_level_profiles)
         resolved = merge_inheritance(spec, two_level_profiles)
         assert "requirements.txt" in resolved.conditionals  # from base
-        assert "Dockerfile" in resolved.conditionals         # from child
+        assert "Dockerfile" in resolved.conditionals  # from child
 
     def test_template_dirs_child_first(self, two_level_profiles):
         spec = resolve_profile("fullstack", two_level_profiles)
@@ -193,23 +194,23 @@ root = ["notebooks", "models"]
         a = tmp_path / "a"
         a.mkdir()
         (a / "templates").mkdir()
-        (a / "profile.toml").write_text('''
+        (a / "profile.toml").write_text("""
 [profile]
 name = "a"
 inherits = "b"
 description = "A"
-''')
+""")
         (a / "structure.toml").write_text("")
 
         b = tmp_path / "b"
         b.mkdir()
         (b / "templates").mkdir()
-        (b / "profile.toml").write_text('''
+        (b / "profile.toml").write_text("""
 [profile]
 name = "b"
 inherits = "a"
 description = "B"
-''')
+""")
         (b / "structure.toml").write_text("")
 
         spec = resolve_profile("a", tmp_path)

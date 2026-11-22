@@ -55,9 +55,9 @@ Generic names; `{{ monorepo_name }}` / `{{ project_name }}` for titles.
 {{ monorepo_name }}/
 ├── LAYOUT.md                 # orientation (first file AI should read)
 ├── README.md
-├── AGENTS.md                 # AI bootstrap + monorepo rules
-├── CLAUDE.md                 # coding + git + IaC policy stubs
-├── GEMINI.md                 # optional short PM notes
+├── AGENTS.md                 # AI instructions: bootstrap, coding, git, IaC policy
+├── CLAUDE.md                 # one-line @AGENTS.md import
+├── .gemini/settings.json     # Gemini CLI context.fileName → AGENTS.md
 ├── BUSINESS.md               # tech stack / constraints stubs
 ├── WORKFLOW.md               # Gitflow-lite
 ├── .gitignore
@@ -109,8 +109,8 @@ Generic names; `{{ monorepo_name }}` / `{{ project_name }}` for titles.
 |------|----------------|
 | `LAYOUT.md` | 30-second map + “where do I put X?” table (generic buckets) |
 | `config/workspace-layout.yaml` | `buckets:` map + empty `trees: {}` or example entries |
-| `AGENTS.md` | Open order: LAYOUT → AGENTS → CLAUDE; no invent top-level dirs; neo section |
-| `CLAUDE.md` | Gitflow-lite, conventional commits, IaC via hosts/, graph-first *stub* (optional) |
+| `AGENTS.md` | Open order: LAYOUT → AGENTS → WORKFLOW; no invent top-level dirs; gitflow-lite, conventional commits, IaC via hosts/; neo section |
+| `CLAUDE.md` / `.gemini/settings.json` | Pointers to `AGENTS.md` (no duplicated content) |
 | `BUSINESS.md` | Placeholder vision/constraints table |
 | `WORKFLOW.md` | develop/main, local feature branches |
 | `docs/**/README.md` | One-liners for each vault area |

@@ -1,4 +1,5 @@
 """Workspace scaffolding and sync for ecosystem-level roots."""
+
 from __future__ import annotations
 
 import json
@@ -25,9 +26,7 @@ SENTINEL_END = "<!-- forge:ecosystem-end -->"
 
 def _get_template_env() -> Environment:
     """Create a Jinja2 environment for workspace templates."""
-    template_dir = (
-        Path(__file__).parent.parent.parent / "templates" / "workspace"
-    )
+    template_dir = Path(__file__).parent.parent.parent / "templates" / "workspace"
     return Environment(
         loader=FileSystemLoader(str(template_dir)),
         keep_trailing_newline=True,
@@ -106,8 +105,12 @@ def render_overlord_md(config: WorkspaceConfig) -> str:
     )
 
 
-def render_workspace_claude_md(config: WorkspaceConfig) -> str:
-    """Render root CLAUDE.md from workspace config.
+CLAUDE_MD_STUB = "@AGENTS.md\n"
+GEMINI_SETTINGS_JSON = '{\n  "context": {\n    "fileName": "AGENTS.md"\n  }\n}\n'
+
+
+def render_workspace_agents_md(config: WorkspaceConfig) -> str:
+    """Render root AGENTS.md from workspace config.
 
     Args:
         config: Workspace configuration.
@@ -116,11 +119,21 @@ def render_workspace_claude_md(config: WorkspaceConfig) -> str:
         Rendered Markdown string.
     """
     env = _get_template_env()
-    template = env.get_template("CLAUDE.md.j2")
+    template = env.get_template("AGENTS.md.j2")
     return template.render(
         workspace_name=config.workspace_name,
         manifest=config.manifest,
     )
+
+
+# Backward-compatible alias (root instructions now live in AGENTS.md).
+render_workspace_claude_md = render_workspace_agents_md
+
+
+def _is_pointer_stub(content: str) -> bool:
+    """Return True if a file is only an ``@AGENTS.md``-style import stub."""
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    return len(lines) == 1 and lines[0].startswith("@")
 
 
 # --- Dependency graph ---
@@ -202,7 +215,9 @@ def scaffold_workspace(
     files_to_write = {
         "BUSINESS.md": render_business_md(config),
         "OVERLORD.md": render_overlord_md(config),
-        "CLAUDE.md": render_workspace_claude_md(config),
+        "AGENTS.md": render_workspace_agents_md(config),
+        "CLAUDE.md": CLAUDE_MD_STUB,
+        ".gemini/settings.json": GEMINI_SETTINGS_JSON,
     }
 
     result: dict[str, list[str]] = {"created": [], "skipped": []}
@@ -218,6 +233,7 @@ def scaffold_workspace(
             result["skipped"].append(filename)
         else:
             if not dry_run:
+                filepath.parent.mkdir(parents=True, exist_ok=True)
                 filepath.write_text(content, encoding="utf-8")
             result["created"].append(filename)
 
@@ -252,9 +268,7 @@ def _parse_md_table(content: str, header_pattern: str) -> list[dict[str, str]]:
         if not in_table:
             if re.match(header_pattern, stripped):
                 # Parse header columns
-                headers = [
-                    h.strip() for h in stripped.strip("|").split("|")
-                ]
+                headers = [h.strip() for h in stripped.strip("|").split("|")]
                 in_table = True
             continue
 
@@ -284,9 +298,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
         Parsed OverlordManifest model.
     """
     # Parse projects table
-    project_rows = _parse_md_table(
-        content, r"^\|\s*Project\s*\|.*Role\s*\|"
-    )
+    project_rows = _parse_md_table(content, r"^\|\s*Project\s*\|.*Role\s*\|")
     projects = []
     for row in project_rows:
         deps_raw = row.get("Depends On", "—").strip()
@@ -295,18 +307,18 @@ def parse_overlord_md(content: str) -> OverlordManifest:
             if deps_raw and deps_raw != "—"
             else []
         )
-        projects.append(ProjectEntry(
-            name=row.get("Project", ""),
-            role=row.get("Role", ""),
-            path=row.get("Path", ""),
-            remote=row.get("Remote", ""),
-            depends_on=deps,
-        ))
+        projects.append(
+            ProjectEntry(
+                name=row.get("Project", ""),
+                role=row.get("Role", ""),
+                path=row.get("Path", ""),
+                remote=row.get("Remote", ""),
+                depends_on=deps,
+            )
+        )
 
     # Parse releases table
-    release_rows = _parse_md_table(
-        content, r"^\|\s*Project\s*\|.*Latest Release\s*\|"
-    )
+    release_rows = _parse_md_table(content, r"^\|\s*Project\s*\|.*Latest Release\s*\|")
     releases = [
         ReleaseEntry(
             project=row.get("Project", ""),
@@ -318,9 +330,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
     ]
 
     # Parse tracks table
-    track_rows = _parse_md_table(
-        content, r"^\|\s*Track\s*\|.*Status\s*\|"
-    )
+    track_rows = _parse_md_table(content, r"^\|\s*Track\s*\|.*Status\s*\|")
     tracks = [
         TrackEntry(
             track=row.get("Track", ""),
@@ -332,9 +342,7 @@ def parse_overlord_md(content: str) -> OverlordManifest:
     ]
 
     # Parse critical path table
-    cp_rows = _parse_md_table(
-        content, r"^\|\s*Phase\s*\|.*Description\s*\|"
-    )
+    cp_rows = _parse_md_table(content, r"^\|\s*Phase\s*\|.*Description\s*\|")
     critical_path = [
         CriticalPathEntry(
             phase=row.get("Phase", ""),
@@ -400,10 +408,7 @@ def _build_project_context(
         Rendered Markdown snippet.
     """
     # Find reverse dependencies
-    depended_on_by = [
-        p.name for p in manifest.projects
-        if project.name in p.depends_on
-    ]
+    depended_on_by = [p.name for p in manifest.projects if project.name in p.depends_on]
 
     # Build siblings list
     siblings = []
@@ -416,11 +421,13 @@ def _build_project_context(
             relationship = "this depends on"
         else:
             relationship = "sibling"
-        siblings.append({
-            "name": p.name,
-            "role": p.role,
-            "relationship": relationship,
-        })
+        siblings.append(
+            {
+                "name": p.name,
+                "role": p.role,
+                "relationship": relationship,
+            }
+        )
 
     env = _get_template_env()
     template = env.get_template("ecosystem_context.md.j2")
@@ -446,9 +453,7 @@ def _parse_governance_rules(content: str) -> list[str]:
         if in_gov:
             if line.strip().startswith("## "):
                 break
-            match = re.match(
-                r"^\d+\.\s+\*\*(.+?)\*\*\s*—\s*(.+)$", line.strip()
-            )
+            match = re.match(r"^\d+\.\s+\*\*(.+?)\*\*\s*—\s*(.+)$", line.strip())
             if match:
                 rules.append(f"**{match.group(1)}** — {match.group(2)}")
     return rules
@@ -459,10 +464,11 @@ def sync_context(
     dry_run: bool = False,
     project_filter: str | None = None,
 ) -> dict[str, list[str]]:
-    """Sync ecosystem context into sub-project CLAUDE.md and GEMINI.md files.
+    """Sync ecosystem context into sub-project AGENTS.md (and legacy CLAUDE.md/GEMINI.md).
 
     Reads OVERLORD.md and BUSINESS.md from the workspace root, then injects
-    a managed section into each sub-project's CLAUDE.md and GEMINI.md using
+    a managed section into each sub-project's AGENTS.md (plus legacy, non-stub
+    CLAUDE.md and GEMINI.md) using
     sentinel comments.
 
     Args:
@@ -500,22 +506,27 @@ def sync_context(
 
         project_dir = target / project.path.rstrip("/")
         if not project_dir.is_dir():
-            result["warnings"].append(
-                f"Project directory not found: {project.path}"
-            )
+            result["warnings"].append(f"Project directory not found: {project.path}")
             continue
 
         context_snippet = _build_project_context(
-            project, manifest, business, workspace_name,
+            project,
+            manifest,
+            business,
+            workspace_name,
         )
 
-        for md_file in ["CLAUDE.md", "GEMINI.md"]:
+        # AGENTS.md is canonical; legacy CLAUDE.md / GEMINI.md are still
+        # synced unless they are one-line ``@AGENTS.md`` pointer stubs.
+        for md_file in ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]:
             md_path = project_dir / md_file
             if not md_path.exists():
                 # Don't create files that don't exist
                 continue
 
             existing = md_path.read_text(encoding="utf-8")
+            if _is_pointer_stub(existing):
+                continue
             updated = _inject_section(existing, context_snippet)
 
             if updated != existing:

@@ -1,5 +1,7 @@
 """Tests for workspace scaffolding, rendering, parsing, and sync."""
 
+import json
+
 from forge.models import (
     BusinessContext,
     BusinessConstraint,
@@ -21,6 +23,7 @@ from forge.workspace import (
     read_workspace_lock,
     render_business_md,
     render_overlord_md,
+    render_workspace_agents_md,
     render_workspace_claude_md,
     scaffold_workspace,
     sync_context,
@@ -40,13 +43,17 @@ def _make_config(workspace_name: str = "Test Labs") -> WorkspaceConfig:
             ],
             hardware_tiers=[
                 HardwareTier(
-                    tier=1, platform="Edge",
-                    hardware="M4 Pro", use_case="Appliance",
+                    tier=1,
+                    platform="Edge",
+                    hardware="M4 Pro",
+                    use_case="Appliance",
                 ),
             ],
             priorities=[
                 StrategicPriority(
-                    priority=1, goal="Ship v1", key_result="Done",
+                    priority=1,
+                    goal="Ship v1",
+                    key_result="Done",
                 ),
             ],
             tech_stack=[
@@ -57,17 +64,23 @@ def _make_config(workspace_name: str = "Test Labs") -> WorkspaceConfig:
         manifest=OverlordManifest(
             projects=[
                 ProjectEntry(
-                    name="core", role="shared-library",
-                    path="core/", remote="org/core",
+                    name="core",
+                    role="shared-library",
+                    path="core/",
+                    remote="org/core",
                 ),
                 ProjectEntry(
-                    name="prime", role="platform-deployment",
-                    path="prime/", remote="org/prime",
+                    name="prime",
+                    role="platform-deployment",
+                    path="prime/",
+                    remote="org/prime",
                     depends_on=["core"],
                 ),
                 ProjectEntry(
-                    name="tools", role="tooling",
-                    path="tools/", remote="org/tools",
+                    name="tools",
+                    role="tooling",
+                    path="tools/",
+                    remote="org/tools",
                 ),
             ],
             releases=[
@@ -125,26 +138,37 @@ class TestRenderOverlordMd:
         assert "v0.1.0" in result
 
 
-class TestRenderWorkspaceClaudeMd:
+class TestRenderWorkspaceAgentsMd:
     def test_contains_workspace_name(self):
         config = _make_config()
-        result = render_workspace_claude_md(config)
+        result = render_workspace_agents_md(config)
         assert "Test Labs" in result
+        assert result.startswith("# AGENTS.md")
 
     def test_contains_project_table(self):
         config = _make_config()
-        result = render_workspace_claude_md(config)
+        result = render_workspace_agents_md(config)
         assert "core/" in result
+
+    def test_claude_alias_still_works(self):
+        config = _make_config()
+        assert render_workspace_claude_md(config) == render_workspace_agents_md(config)
 
 
 class TestBuildDependencyAscii:
     def test_simple_tree(self):
         projects = [
             ProjectEntry(
-                name="core", role="lib", path="core/", remote="x/core",
+                name="core",
+                role="lib",
+                path="core/",
+                remote="x/core",
             ),
             ProjectEntry(
-                name="prime", role="deploy", path="prime/", remote="x/prime",
+                name="prime",
+                role="deploy",
+                path="prime/",
+                remote="x/prime",
                 depends_on=["core"],
             ),
         ]
@@ -155,7 +179,10 @@ class TestBuildDependencyAscii:
     def test_standalone_projects(self):
         projects = [
             ProjectEntry(
-                name="tools", role="tooling", path="tools/", remote="x/tools",
+                name="tools",
+                role="tooling",
+                path="tools/",
+                remote="x/tools",
             ),
         ]
         result = build_dependency_ascii(projects)
@@ -164,14 +191,23 @@ class TestBuildDependencyAscii:
     def test_mixed_tree_and_standalone(self):
         projects = [
             ProjectEntry(
-                name="core", role="lib", path="core/", remote="x/core",
+                name="core",
+                role="lib",
+                path="core/",
+                remote="x/core",
             ),
             ProjectEntry(
-                name="prime", role="deploy", path="prime/", remote="x/prime",
+                name="prime",
+                role="deploy",
+                path="prime/",
+                remote="x/prime",
                 depends_on=["core"],
             ),
             ProjectEntry(
-                name="tools", role="tooling", path="tools/", remote="x/tools",
+                name="tools",
+                role="tooling",
+                path="tools/",
+                remote="x/tools",
             ),
         ]
         result = build_dependency_ascii(projects)
@@ -187,10 +223,16 @@ class TestScaffoldWorkspace:
 
         assert "BUSINESS.md" in result["created"]
         assert "OVERLORD.md" in result["created"]
+        assert "AGENTS.md" in result["created"]
         assert "CLAUDE.md" in result["created"]
+        assert ".gemini/settings.json" in result["created"]
         assert (tmp_path / "BUSINESS.md").exists()
         assert (tmp_path / "OVERLORD.md").exists()
-        assert (tmp_path / "CLAUDE.md").exists()
+        assert (tmp_path / "AGENTS.md").read_text().startswith("# AGENTS.md")
+        assert (tmp_path / "CLAUDE.md").read_text() == "@AGENTS.md\n"
+        settings = json.loads((tmp_path / ".gemini" / "settings.json").read_text())
+        assert settings["context"]["fileName"] == "AGENTS.md"
+        assert not (tmp_path / "GEMINI.md").exists()
         assert (tmp_path / "docs").is_dir()
         assert (tmp_path / "conductor" / "tracks").is_dir()
 
@@ -360,9 +402,7 @@ class TestSyncContext:
 
         core_dir = tmp_path / "core"
         core_dir.mkdir()
-        (core_dir / "CLAUDE.md").write_text(
-            "# Core Project\n\nUser content here\n"
-        )
+        (core_dir / "CLAUDE.md").write_text("# Core Project\n\nUser content here\n")
 
         sync_context(tmp_path)
         updated = (core_dir / "CLAUDE.md").read_text()
@@ -414,6 +454,32 @@ class TestSyncContext:
         assert "core/CLAUDE.md" in result["updated"]
         # File unchanged
         assert (core_dir / "CLAUDE.md").read_text() == "# Core\n"
+
+    def test_syncs_agents_md(self, tmp_path):
+        config = _make_config()
+        scaffold_workspace(tmp_path, config)
+
+        core_dir = tmp_path / "core"
+        core_dir.mkdir()
+        (core_dir / "AGENTS.md").write_text("# Core Agents\n")
+
+        result = sync_context(tmp_path)
+        assert "core/AGENTS.md" in result["updated"]
+        assert SENTINEL_START in (core_dir / "AGENTS.md").read_text()
+
+    def test_skips_pointer_stub_claude_md(self, tmp_path):
+        config = _make_config()
+        scaffold_workspace(tmp_path, config)
+
+        core_dir = tmp_path / "core"
+        core_dir.mkdir()
+        (core_dir / "AGENTS.md").write_text("# Core Agents\n")
+        (core_dir / "CLAUDE.md").write_text("@AGENTS.md\n")
+
+        result = sync_context(tmp_path)
+        assert "core/AGENTS.md" in result["updated"]
+        assert "core/CLAUDE.md" not in result["updated"]
+        assert (core_dir / "CLAUDE.md").read_text() == "@AGENTS.md\n"
 
     def test_syncs_gemini_md_too(self, tmp_path):
         config = _make_config()

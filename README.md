@@ -117,11 +117,14 @@ Ecosystem multi-repo helpers: `forge workspace` (templates under `templates/work
 
 ## What a forged tree looks like
 
+Every profile writes agent instructions to **`AGENTS.md`** ([agents.md](https://agents.md) convention). `CLAUDE.md` is a one-line `@AGENTS.md` import and `.gemini/settings.json` sets Gemini CLI's `context.fileName` to `AGENTS.md`, so there is one file to maintain. No `GEMINI.md` is generated.
+
 ### `base` / `fullstack` (single package)
 
 ```text
 my-app/
-├── AGENTS.md, CLAUDE.md, GEMINI.md, AI_DIRECTIVES.md, WORKFLOW.md, CONTEXT.md
+├── AGENTS.md, CLAUDE.md (@AGENTS.md stub), .gemini/settings.json
+├── AI_DIRECTIVES.md, WORKFLOW.md, CONTEXT.md
 ├── src/<slug>/
 ├── tests/
 ├── docs/ …
@@ -137,7 +140,7 @@ my-app/
 
 ```text
 eco/
-├── LAYOUT.md, AGENTS.md, CLAUDE.md, WORKFLOW.md, BUSINESS.md, …
+├── LAYOUT.md, AGENTS.md, CLAUDE.md (stub), .gemini/settings.json, WORKFLOW.md, BUSINESS.md, …
 ├── config/workspace-layout.yaml
 ├── products/example-app/
 ├── services/  hosts/  lab/

@@ -1,4 +1,5 @@
 """Tests for .forge.lock read/write/diff operations."""
+
 import pytest
 
 from forge.lockfile import write_lock, read_lock, diff_lock

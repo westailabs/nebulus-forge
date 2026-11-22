@@ -1,4 +1,5 @@
 """Apply rendered files to disk with create/update/force strategies."""
+
 from __future__ import annotations
 
 import hashlib
@@ -59,9 +60,7 @@ def apply_to_disk(
 
     if strategy == Strategy.UPDATE:
         if lock is None:
-            raise ValueError(
-                "Update strategy requires an existing .forge.lock file."
-            )
+            raise ValueError("Update strategy requires an existing .forge.lock file.")
         _apply_update(rendered_files, target, lock, result)
     elif strategy == Strategy.FORCE:
         _apply_create(rendered_files, target, result, force=True)
@@ -83,8 +82,7 @@ def _apply_create(
 
         if not force and file_path.exists():
             raise FileExistsError(
-                f"File already exists: {file_path}. "
-                "Use --force to overwrite."
+                f"File already exists: {file_path}. " "Use --force to overwrite."
             )
 
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,9 +124,7 @@ def _apply_update(
 
         elif action == FileAction.SKIP_MODIFIED:
             result.skipped.append(path)
-            result.warnings.append(
-                f"Skipped {path} — modified by user"
-            )
+            result.warnings.append(f"Skipped {path} — modified by user")
 
         elif action == FileAction.SKIP_DELETED:
             result.skipped.append(path)

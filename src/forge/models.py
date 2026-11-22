@@ -1,4 +1,5 @@
 """Pydantic models for Forge v2 pipeline."""
+
 from __future__ import annotations
 
 import enum
@@ -10,6 +11,7 @@ from pydantic import BaseModel, Field
 
 class VariableSpec(BaseModel):
     """Specification for a single profile variable."""
+
     prompt: str
     type: Literal["string", "choice", "confirm"]
     default: str | bool | None = None
@@ -18,6 +20,7 @@ class VariableSpec(BaseModel):
 
 class ProfileSpec(BaseModel):
     """Raw profile loaded from a single profile.toml + structure.toml."""
+
     name: str
     description: str
     inherits: str | None = None
@@ -30,6 +33,7 @@ class ProfileSpec(BaseModel):
 
 class ResolvedProfile(BaseModel):
     """Profile after inheritance chain is fully merged."""
+
     name: str
     description: str
     variables: dict[str, VariableSpec] = Field(default_factory=dict)
@@ -41,6 +45,7 @@ class ResolvedProfile(BaseModel):
 
 class RenderedFile(BaseModel):
     """A file that has been rendered in memory, ready to write."""
+
     output_path: str
     content: str
     template_name: str
@@ -49,6 +54,7 @@ class RenderedFile(BaseModel):
 
 class Strategy(str, enum.Enum):
     """File application strategy."""
+
     CREATE = "create"
     UPDATE = "update"
     FORCE = "force"
@@ -56,6 +62,7 @@ class Strategy(str, enum.Enum):
 
 class FileAction(str, enum.Enum):
     """Action to take on a single file during apply."""
+
     CREATE = "create"
     UPDATE = "update"
     SKIP_MODIFIED = "skip_modified"
@@ -65,6 +72,7 @@ class FileAction(str, enum.Enum):
 
 class ApplyResult(BaseModel):
     """Result of applying rendered files to disk."""
+
     created: list[str] = Field(default_factory=list)
     updated: list[str] = Field(default_factory=list)
     skipped: list[str] = Field(default_factory=list)
@@ -73,12 +81,14 @@ class ApplyResult(BaseModel):
 
 class ManagedFileEntry(BaseModel):
     """A single entry in the lock file's managed files section."""
+
     template: str
     hash: str
 
 
 class ForgeLock(BaseModel):
     """The .forge.lock file schema."""
+
     version: str
     profile: str
     generated_at: str
@@ -91,12 +101,14 @@ class ForgeLock(BaseModel):
 
 class BusinessConstraint(BaseModel):
     """A single business constraint entry."""
+
     constraint: str
     value: str
 
 
 class HardwareTier(BaseModel):
     """A target hardware tier."""
+
     tier: int
     platform: str
     hardware: str
@@ -105,6 +117,7 @@ class HardwareTier(BaseModel):
 
 class StrategicPriority(BaseModel):
     """A strategic priority with key result."""
+
     priority: int
     goal: str
     key_result: str
@@ -112,6 +125,7 @@ class StrategicPriority(BaseModel):
 
 class TechStackEntry(BaseModel):
     """An approved technology in the stack."""
+
     layer: str
     technology: str
     locked: bool = True
@@ -119,6 +133,7 @@ class TechStackEntry(BaseModel):
 
 class BusinessContext(BaseModel):
     """Full BUSINESS.md content model."""
+
     schema_version: str = "1.0"
     vision: str = ""
     constraints: list[BusinessConstraint] = Field(default_factory=list)
@@ -130,6 +145,7 @@ class BusinessContext(BaseModel):
 
 class ProjectEntry(BaseModel):
     """A project registered in the ecosystem."""
+
     name: str
     role: str
     path: str
@@ -139,6 +155,7 @@ class ProjectEntry(BaseModel):
 
 class ReleaseEntry(BaseModel):
     """Release status for a project."""
+
     project: str
     latest_release: str = "—"
     branch: str = "develop"
@@ -147,6 +164,7 @@ class ReleaseEntry(BaseModel):
 
 class TrackEntry(BaseModel):
     """An active work track."""
+
     track: str
     status: str = "In Progress"
     priority: int = 3
@@ -155,6 +173,7 @@ class TrackEntry(BaseModel):
 
 class CriticalPathEntry(BaseModel):
     """A critical path phase."""
+
     phase: str
     description: str
     status: str = "Pending"
@@ -163,6 +182,7 @@ class CriticalPathEntry(BaseModel):
 
 class OverlordManifest(BaseModel):
     """Full OVERLORD.md content model."""
+
     schema_version: str = "1.0"
     projects: list[ProjectEntry] = Field(default_factory=list)
     releases: list[ReleaseEntry] = Field(default_factory=list)
@@ -172,6 +192,7 @@ class OverlordManifest(BaseModel):
 
 class WorkspaceConfig(BaseModel):
     """Top-level workspace configuration for scaffold + lock."""
+
     version: str = "1.0"
     workspace_name: str
     generated_at: str = ""

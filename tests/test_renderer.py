@@ -1,4 +1,5 @@
 """Tests for Jinja2 template rendering."""
+
 import pytest
 from pathlib import Path
 
