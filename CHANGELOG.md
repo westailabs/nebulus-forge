@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-21
+
+### Added
+- Repository baseline: `AGENTS.md` as the agent instruction source (with a one-line
+  `CLAUDE.md` stub), plus CONTRIBUTING, SECURITY, EditorConfig, and pre-commit config.
+
 ### Changed
 - Generated projects (`base`, `fullstack`, `monorepo`) and `forge workspace init` now write
   agent instructions to **`AGENTS.md`** (agents.md convention), a one-line `CLAUDE.md`
@@ -16,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `@AGENTS.md` pointer stubs. `render_workspace_claude_md` is kept as an alias of
   `render_workspace_agents_md`.
 - CI lint gate is strict: full `flake8` plus `black --check` (black pinned to 26.10.1).
+- CI test matrix includes Python 3.12 (in addition to 3.10 and 3.11).
+
+### Fixed
+- CI installs the package with `pip install -e ".[dev]"` so tests can import `pydantic`
+  and `typer`. Those dependencies were already declared in `pyproject.toml` but were
+  missing from `requirements.txt`, which is what the previous workflow installed.
 
 ## [0.3.0] - 2026-08-05
 
